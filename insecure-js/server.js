@@ -76,7 +76,7 @@ const server = http.createServer((req, res) => {
             const query = `SELECT product FROM Orders WHERE orderNumber = ${postData.orderNumber3};`;
             responseMessages.push(`<p>Executing SQL query: ${query}</p>`);
         
-            connection.query(query, (err, rows) => {
+            connection.execute('SELECT product FROM Orders WHERE orderNumber = ?', [postData.orderNumber3], (err, rows) => {
                 if (err) {
                     console.error("SQL query error:", err);
                     responseMessages.push(`<p>An error occurred: ${err.message}</p>`);
@@ -109,8 +109,11 @@ const server = http.createServer((req, res) => {
           asyncTasks.push(
             (async () => {
               try {
-                const query = `SELECT product FROM Orders WHERE orderNumber = ${postData.orderNumber};`;
-                const result = await sequelize.query(query, { type: sequelize.QueryTypes.SELECT });
+                const query = 'SELECT product FROM Orders WHERE orderNumber = :orderNumber';
+                const result = await sequelize.query(query, { 
+                        replacements: { orderNumber: postData.orderNumber },
+                        type: sequelize.QueryTypes.SELECT 
+                      });
                 responseMessages[index] += result.length > 0
                   ? `<p>Order details: <pre>${JSON.stringify(result, null, 2)}</pre></p>`
                   : `<p>No orders found for order number ${postData.orderNumber}</p>`;
